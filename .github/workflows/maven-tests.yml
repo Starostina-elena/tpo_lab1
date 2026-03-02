@@ -1,0 +1,39 @@
+name: CI - Maven module tests
+
+on:
+  push:
+    branches: ["main", "master", "part1", "part2", "part3", "lab2"]
+  pull_request:
+
+jobs:
+  maven-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ["part1/part1", "part2/part2", "part3/part3"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Show Java and Maven versions
+        run: |
+          java -version
+          mvn -v
+
+      - name: Run tests for module
+        run: mvn -B -f ${{ matrix.module }}/pom.xml test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-${{ matrix.module }}
+          path: ${{ matrix.module }}/target/surefire-reports/**
+
