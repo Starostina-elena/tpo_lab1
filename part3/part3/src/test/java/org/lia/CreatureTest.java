@@ -24,7 +24,7 @@ public class CreatureTest {
         Creature creature = new Creature("TestCreature");
         creature.beHitten();
     }
-    
+
     @Test
     void testSetAndSolveQuestions() {
         Creature creature = new Creature("TestCreature");
