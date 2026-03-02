@@ -10,7 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: ["part1/part1", "part2/part2", "part3/part3"]
+        include:
+          - id: part1
+            path: "part1/part1"
+          - id: part2
+            path: "part2/part2"
+          - id: part3
+            path: "part3/part3"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,12 +34,11 @@ jobs:
           mvn -v
 
       - name: Run tests for module
-        run: mvn -B -f ${{ matrix.module }}/pom.xml test
+        run: mvn -B -f ${{ matrix.path }}/pom.xml test
 
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-${{ matrix.module }}
-          path: ${{ matrix.module }}/target/surefire-reports/**
-
+          name: surefire-${{ matrix.id }}
+          path: ${{ matrix.path }}/target/surefire-reports/**
