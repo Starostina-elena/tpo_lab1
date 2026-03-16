@@ -1,0 +1,51 @@
+@startuml
+package org.lia.Models {
+  class Coordinates {
+    - x: int
+    - y: int
+    + Coordinates(x:int, y:int)
+    + getX(): int
+    + getY(): int
+    + distanceTo(other: Coordinates): double
+  }
+
+  class Action {
+    - description: String
+    - compatibleWithQuestions: boolean
+    + Action(description:String, compatible:boolean)
+    + isCompatibleWithQuestions(): boolean
+    + getDescription(): String
+  }
+
+  class Question {
+    - text: String
+    - answer: String
+    - answered: boolean
+    + Question(text:String, answer:String)
+    + isAnswered(): boolean
+    + setAnswered(value:boolean): void
+    + getText(): String
+  }
+
+  class Creature {
+    - name: String
+    - position: Coordinates
+    - health: int
+    - actions: List<Action>
+    - questions: List<Question>
+    + Creature(name:String, pos:Coordinates)
+    + getName(): String
+    + setName(name:String): void
+    + hitOther(target:Creature): boolean
+    + AddAction(action:Action): boolean
+    + AddQuestion(q:Question): boolean
+    + getActions(): List<Action>
+    + getQuestions(): List<Question>
+  }
+
+  Creature ..> Action : ""
+  Creature ..> Question : ""
+  Creature ..> Coordinates : ""
+}
+@enduml
+
