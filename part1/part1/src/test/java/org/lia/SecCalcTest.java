@@ -6,47 +6,50 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class SecCalcTest {
     public static final double pi = 3.1415926535;
 
     @ParameterizedTest(name = "sec({0})")
-    @DisplayName("Check main values")
-    @ValueSource(doubles = {
-            0,
-            0.5,
-            1,
-            -0.5,
-            -1,
-            pi,
-            -pi,
-            pi / 2,
-            pi / 4,
-            -pi / 2,
-            -pi / 4,
-            Double.NaN,
-            Double.POSITIVE_INFINITY,
-            Double.MIN_VALUE,
+    @DisplayName("Check main values (input, expected)")
+    @CsvSource({
+            "0,1.0",
+            "0.5,1.139493927324549",
+            "1.0,1.8508157176809255",
+            "-0.5,1.139493927324549",
+            "-1.0,1.8508157176809255",
+            "3.1415926535,-1.0",
+            "-3.1415926535,-1.0",
+            "1.57079632675,22273405433.954346",
+            "0.785398163375,1.4142135623413483",
+            "-1.57079632675,22273405433.954346",
+            "-0.785398163375,1.4142135623413483",
+            "NaN,NaN",
+            "Infinity,NaN",
+            "4.9406564584124654e-324,1.0"
     })
-    void checkMainValues(double x) {
+    void checkMainValues(String xStr, String expectedStr) {
         assertAll(
                 () -> {
-                    double expected = 1 / Math.cos(x);
+                    double x = Double.parseDouble(xStr);
+                    double expected = Double.parseDouble(expectedStr);
+
                     double actual = org.lia.SecCalc.Calc(x, 1e-16, 200);
 
-                    if (Double.isNaN(expected) && Double.isNaN(actual)) {
-                        assertTrue(true);
+                    if (Double.isNaN(expected)) {
+                        assertTrue(Double.isNaN(actual), "expected NaN for x=" + x + " but was " + actual);
                         return;
                     }
-                    if (Double.isInfinite(expected) && Double.isInfinite(actual)) {
+                    if (Double.isInfinite(expected)) {
+                        assertTrue(Double.isInfinite(actual), "expected Infinite for x=" + x + " but was " + actual);
                         assertEquals(Math.signum(expected), Math.signum(actual));
                         return;
                     }
 
                     if (Double.isFinite(expected) && Double.isFinite(actual)) {
                         double relErr = Math.abs(expected - actual) / Math.max(1.0, Math.abs(expected));
-                        assertTrue(relErr < 1e-6, "error too large: " + relErr + " for x=" + x);
+                        assertTrue(relErr < 1e-6, "error too large: " + relErr + " for x=" + x + " expected=" + expected + " actual=" + actual);
                     } else {
                         assertEquals(expected, actual);
                     }
