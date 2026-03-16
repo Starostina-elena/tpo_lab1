@@ -2,7 +2,7 @@ package org.lia;
 
 public class BTree {
 
-    private class Node {
+    private static class Node {
         Integer a, b, c;
         Node ch1, ch2, ch3, ch4;
         Node parent;
@@ -49,7 +49,7 @@ public class BTree {
     private Node root;
 
     public BTree() {
-        root = new Node(null);
+        root = new org.lia.BTree.Node(null);
     }
 
     private Node chooseChild(Node node, int x) {
@@ -99,7 +99,7 @@ public class BTree {
         Node child = chooseChild(node, x);
 
         if (child == null) {
-            child = new Node(node);
+            child = new org.lia.BTree.Node(node);
             if (node.b == null && node.c == null) {
                 if (node.ch1 == null) node.ch1 = child; else node.ch2 = child;
             } else if (node.c == null) {
@@ -125,8 +125,8 @@ public class BTree {
 
     private void splitRoot() {
         root.balanceValues();
-        Node left = new Node(null);
-        Node right = new Node(null);
+        Node left = new org.lia.BTree.Node(null);
+        Node right = new org.lia.BTree.Node(null);
         left.a = root.a;
         right.a = root.c;
 
@@ -144,7 +144,7 @@ public class BTree {
         }
 
         int promoted = root.b;
-        Node newRoot = new Node(null);
+        Node newRoot = new org.lia.BTree.Node(null);
         newRoot.a = promoted;
         newRoot.ch1 = left; left.parent = newRoot;
         newRoot.ch2 = right; right.parent = newRoot;
@@ -153,8 +153,8 @@ public class BTree {
 
     private void splitChild(Node parent, Node child) {
         child.balanceValues();
-        Node left = new Node(parent);
-        Node right = new Node(parent);
+        Node left = new org.lia.BTree.Node(parent);
+        Node right = new org.lia.BTree.Node(parent);
         left.a = child.a;
         right.a = child.c;
 
