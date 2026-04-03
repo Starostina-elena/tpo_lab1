@@ -6,35 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.CsvFileSource;
 
 public class SecCalcTest {
     public static final double pi = 3.1415926535;
 
     @ParameterizedTest(name = "sec({0})")
     @DisplayName("Check main values (input, expected)")
-    @CsvSource({
-            "0,1.0",
-            "0.5,1.139493927324549",
-            "1.0,1.8508157176809255",
-            "-0.5,1.139493927324549",
-            "-1.0,1.8508157176809255",
-            "3.1415926535,-1.0",
-            "-3.1415926535,-1.0",
-            "1.57079632675,22273405433.954346",
-            "0.785398163375,1.4142135623413483",
-            "-1.57079632675,22273405433.954346",
-            "-0.785398163375,1.4142135623413483",
-            "NaN,NaN",
-            "Infinity,NaN",
-            "4.9406564584124654e-324,1.0"
-    })
-    void checkMainValues(String xStr, String expectedStr) {
+    @CsvFileSource(resources = "/sec_values.csv")
+    void checkMainValues(double x, double expected) {
         assertAll(
                 () -> {
-                    double x = Double.parseDouble(xStr);
-                    double expected = Double.parseDouble(expectedStr);
-
                     double actual = org.lia.SecCalc.Calc(x, 1e-16, 200);
 
                     if (Double.isNaN(expected)) {
