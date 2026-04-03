@@ -43,9 +43,9 @@ package org.lia.Models {
     + getQuestions(): List<Question>
   }
 
-  Creature ..> Action : ""
-  Creature ..> Question : ""
-  Creature ..> Coordinates : ""
+  Creature ..> Action : "include (list of)"
+  Creature ..> Question : "include (list of)"
+  Creature ..> Coordinates : "include"
 }
 @enduml
 
