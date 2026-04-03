@@ -5,9 +5,14 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Getter
 @Setter
 public class Creature {
+
+    private static final Logger logger = LoggerFactory.getLogger(Creature.class);
 
     private String name;
 
@@ -31,7 +36,7 @@ public class Creature {
         }
         actions.add(action);
         if (!action.isCompatibleWithQuestion()) {
-            System.out.println("Creature " + name + " terminates solving questions");
+            logger.info("Creature " + name + " terminates solving questions");
             questions = new ArrayList<>();
             return false;
         }
@@ -44,7 +49,7 @@ public class Creature {
         }
         for (Action action : actions) {
             if (!action.isCompatibleWithQuestion()) {
-                System.out.println("Creature " + name + " is busy with task " + action.getActionText() + " and cannot solve questions");
+                logger.info("Creature " + name + " is busy with task " + action.getActionText() + " and cannot solve questions");
                 return false;
             }
         }
@@ -59,17 +64,17 @@ public class Creature {
         double distance = this.coordinates.computeDistanceTo(other.getCoordinates());
         if (distance < 5) {
             other.setHp(other.getHp() - 10);
-            System.out.println(this.name + " hits " + other.getName() + " for 10 damage!");
+            logger.info(this.name + " hits " + other.getName() + " for 10 damage!");
             return true;
         } else {
-            System.out.println(this.name + " is too far away to hit " + other.getName());
+            logger.info(this.name + " is too far away to hit " + other.getName());
             return false;
         }
     }
 
     private boolean checkDead() {
         if (hp <= 0) {
-            System.out.println(name + " has died.");
+            logger.info(name + " has died.");
             questions = new ArrayList<>();
             actions = new ArrayList<>();
             return true;

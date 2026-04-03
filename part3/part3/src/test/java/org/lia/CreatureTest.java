@@ -1,13 +1,39 @@
 package org.lia;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.lia.Models.Coordinates;
 import org.lia.Models.Creature;
 import org.lia.Models.Question;
 
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 public class CreatureTest {
+
+    private ListAppender<ILoggingEvent> listAppender;
+
+    @BeforeEach
+    void setupLogger() {
+        Logger logger = (Logger) LoggerFactory.getLogger(Creature.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+        listAppender.list.clear();
+    }
+
+    private boolean logsContain(String substr) {
+        for (ILoggingEvent ev : listAppender.list) {
+            if (ev.getFormattedMessage().contains(substr)) return true;
+        }
+        return false;
+    }
 
     @Test
     void testCreatureCreation() {
@@ -27,6 +53,7 @@ public class CreatureTest {
         Creature creature = new Creature("Creature 1", new Coordinates(10, 20));
         Creature other = new Creature("Creature 2", new Coordinates(11, 21));
         assertTrue(other.hitOther(creature));
+        assertTrue(logsContain("hits"));
     }
 
     @Test
@@ -34,6 +61,7 @@ public class CreatureTest {
         Creature creature = new Creature("Creature 1", new Coordinates(10, 20));
         Creature other = new Creature("Creature 2", new Coordinates(100, 200));
         assertFalse(other.hitOther(creature));
+        assertTrue(logsContain("is too far away to hit"));
     }
 
     @Test
@@ -44,6 +72,7 @@ public class CreatureTest {
             assertTrue(other.hitOther(creature));
         }
         assertFalse(creature.hitOther(other));
+        assertTrue(logsContain("has died."));
     }
 
     @Test
@@ -71,6 +100,7 @@ public class CreatureTest {
         Creature creature = new Creature("TestCreature", new Coordinates(10, 20));
         creature.AddAction(new org.lia.Models.Action("Task 1", false));
         assertFalse(creature.AddQuestion(new Question("Question 1", "Answer 1")));
+        assertTrue(logsContain("is busy with task"));
     }
 
     @Test
@@ -86,6 +116,7 @@ public class CreatureTest {
         creature.AddQuestion(new Question("Question 1", "Answer 1"));
         creature.AddAction(new org.lia.Models.Action("Task 1", false));
         assertEquals(0, creature.getQuestions().size());
+        assertTrue(logsContain("terminates solving questions"));
     }
 
     @Test
@@ -97,5 +128,6 @@ public class CreatureTest {
         }
         assertFalse(creature.AddQuestion(new Question("Question 1", "Answer 1")));
         assertFalse(creature.AddAction(new org.lia.Models.Action("Task 1", true)));
+        assertTrue(logsContain("has died."));
     }
 }
