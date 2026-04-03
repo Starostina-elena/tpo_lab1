@@ -1,5 +1,8 @@
 package org.lia;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BTree {
 
     private static class Node {
@@ -48,15 +51,7 @@ public class BTree {
 
     private Node root;
 
-    public final java.util.List<String> log = new java.util.ArrayList<>();
-
-    public void clearLog() { log.clear(); }
-
-    private void logf(String fmt, Object... args) {
-        log.add(String.format(fmt, args));
-    }
-
-    public java.util.List<String> getLog() { return log; }
+    private static final Logger logger = LoggerFactory.getLogger(BTree.class);
 
     public BTree() {
         root = new org.lia.BTree.Node(null);
@@ -80,41 +75,41 @@ public class BTree {
 
     public boolean search(int x) {
         Node node = root;
-        logf("search:start:%d", x);
+        logger.info(String.format("search:start:%d", x));
         while (node != null) {
-            logf("search:at:%s", node.toString());
+            logger.info(String.format("search:at:%s", node.toString()));
             if ((node.a != null && node.a == x) || (node.b != null && node.b == x) || (node.c != null && node.c == x)) {
-                logf("search:found:%d", x);
+                logger.info(String.format("search:found:%d", x));
                 return true;
             }
             if (node.isLeaf()) {
-                logf("search:notfound:%d", x);
+                logger.info(String.format("search:notfound:%d", x));
                 return false;
             }
             node = chooseChild(node, x);
         }
-        logf("search:notfound:%d", x);
+        logger.info(String.format("search:notfound:%d", x));
         return false;
     }
 
     public void insert(int x) {
-        logf("insert:start:%d", x);
+        logger.info(String.format("insert:start:%d", x));
         if (root.isFull()) {
-            logf("insert:rootIsFull:splitRoot");
+            logger.info(String.format("insert:rootIsFull:splitRoot"));
             splitRoot();
         }
         insertNonFull(root, x);
-        logf("insert:done:%d", x);
+        logger.info(String.format("insert:done:%d", x));
     }
 
     private void insertNonFull(Node node, int x) {
-        logf("insertNonFull:node:%s x:%d", node.toString(), x);
+        logger.info(String.format("insertNonFull:node:%s x:%d", node.toString(), x));
         if (node.isLeaf()) {
             if (node.a == null) node.a = x;
             else if (node.b == null) node.b = x;
             else if (node.c == null) node.c = x;
             node.balanceValues();
-            logf("insertNonFull:placedInLeaf:%s", node.toString());
+            logger.info(String.format("insertNonFull:placedInLeaf:%s", node.toString()));
             return;
         }
 
@@ -122,7 +117,7 @@ public class BTree {
 
         if (child == null) {
             child = new org.lia.BTree.Node(node);
-            logf("insertNonFull:createChildAtParent:%s", node.toString());
+            logger.info(String.format("insertNonFull:createChildAtParent:%s", node.toString()));
             if (node.b == null && node.c == null) {
                 if (node.ch1 == null) node.ch1 = child; else node.ch2 = child;
             } else if (node.c == null) {
@@ -139,7 +134,7 @@ public class BTree {
         }
 
         if (child.isFull()) {
-            logf("insertNonFull:childIsFull:splitChild parent:%s child:%s", node.toString(), child.toString());
+            logger.info(String.format("insertNonFull:childIsFull:splitChild parent:%s child:%s", node.toString(), child.toString()));
             splitChild(node, child);
             child = chooseChild(node, x);
         }
@@ -168,7 +163,7 @@ public class BTree {
         }
 
         int promoted = root.b;
-        logf("splitRoot:promoted:%d", promoted);
+        logger.info(String.format("splitRoot:promoted:%d", promoted));
         Node newRoot = new org.lia.BTree.Node(null);
         newRoot.a = promoted;
         newRoot.ch1 = left; left.parent = newRoot;
@@ -189,7 +184,7 @@ public class BTree {
         if (child.ch4 != null) { right.ch2 = child.ch4; right.ch2.parent = right; }
 
         int promoted = child.b;
-        logf("splitChild:parent:%s child:%s promoted:%d", parent.toString(), child.toString(), promoted);
+        logger.info(String.format("splitChild:parent:%s child:%s promoted:%d", parent.toString(), child.toString(), promoted));
 
         java.util.List<Integer> keys = new java.util.ArrayList<>();
         if (parent.a != null) keys.add(parent.a);
@@ -236,18 +231,18 @@ public class BTree {
     }
 
     public void delete(int x) {
-        logf("delete:start:%d", x);
+        logger.info(String.format("delete:start:%d", x));
         if (!search(x)) {
-            logf("delete:notFound:%d", x);
+            logger.info(String.format("delete:notFound:%d", x));
             return;
         }
         deleteInternal(root, x);
         if (root.a == null && !root.isLeaf()) {
-            logf("delete:rootShrank:oldRootPromotedToChild");
+            logger.info(String.format("delete:rootShrank:oldRootPromotedToChild"));
             root = root.ch1;
             if (root != null) root.parent = null;
         }
-        logf("delete:done:%d", x);
+        logger.info(String.format("delete:done:%d", x));
     }
 
     private int keyCount(Node n) {
@@ -316,7 +311,7 @@ public class BTree {
     }
 
     private void rotateLeft(Node parent, int childIdx) {
-        logf("rotateLeft:start:parent:%s childIdx:%d", parent.toString(), childIdx);
+        logger.info(String.format("rotateLeft:start:parent:%s childIdx:%d", parent.toString(), childIdx));
         Node child = getChildAt(parent, childIdx);
         Node right = getChildAt(parent, childIdx + 1);
         Integer parentKey = getKeyAt(parent, childIdx);
@@ -351,11 +346,11 @@ public class BTree {
             child.ch4 = move;
         }
         if (move != null) move.parent = child;
-        logf("rotateLeft:done:parent:%s child:%s right:%s", parent.toString(), child.toString(), right.toString());
+        logger.info(String.format("rotateLeft:done:parent:%s child:%s right:%s", parent.toString(), child.toString(), right.toString()));
     }
 
     private void rotateRight(Node parent, int childIdx) {
-        logf("rotateRight:start:parent:%s childIdx:%d", parent.toString(), childIdx);
+        logger.info(String.format("rotateRight:start:parent:%s childIdx:%d", parent.toString(), childIdx));
         Node child = getChildAt(parent, childIdx);
         Node left = getChildAt(parent, childIdx - 1);
         Integer parentKey = getKeyAt(parent, childIdx - 1);
@@ -381,11 +376,11 @@ public class BTree {
         child.ch2 = child.ch1;
         child.ch1 = move;
         if (move != null) move.parent = child;
-        logf("rotateRight:done:parent:%s child:%s left:%s", parent.toString(), child.toString(), left.toString());
+        logger.info(String.format("rotateRight:done:parent:%s child:%s left:%s", parent.toString(), child.toString(), left.toString()));
     }
 
     private void mergeWithRight(Node parent, int childIdx) {
-        logf("mergeWithRight:start:parent:%s childIdx:%d", parent.toString(), childIdx);
+        logger.info(String.format("mergeWithRight:start:parent:%s childIdx:%d", parent.toString(), childIdx));
         Node left = getChildAt(parent, childIdx);
         Node right = getChildAt(parent, childIdx + 1);
         Integer parentKey = getKeyAt(parent, childIdx);
@@ -416,23 +411,23 @@ public class BTree {
         }
         parent.ch1 = parent.ch2 = parent.ch3 = parent.ch4 = null;
         for (int i = 0; i < newChildren.size() && i < 4; i++) setChildAt(parent, i, newChildren.get(i));
-        logf("mergeWithRight:done:parent:%s mergedNode:%s", parent.toString(), left.toString());
+        logger.info(String.format("mergeWithRight:done:parent:%s mergedNode:%s", parent.toString(), left.toString()));
     }
 
     private void mergeWithLeft(Node parent, int leftIdx) {
-        logf("mergeWithLeft:start:parent:%s leftIdx:%d", parent.toString(), leftIdx);
+        logger.info(String.format("mergeWithLeft:start:parent:%s leftIdx:%d", parent.toString(), leftIdx));
         mergeWithRight(parent, leftIdx);
-        logf("mergeWithLeft:done:parent:%s leftIdx:%d", parent.toString(), leftIdx);
+        logger.info(String.format("mergeWithLeft:done:parent:%s leftIdx:%d", parent.toString(), leftIdx));
     }
 
     private void deleteInternal(Node node, int x) {
-        logf("deleteInternal:start:node:%s x:%d", node.toString(), x);
+        logger.info(String.format("deleteInternal:start:node:%s x:%d", node.toString(), x));
         if (node == null) return;
         if (node.a != null && node.a == x || node.b != null && node.b == x || node.c != null && node.c == x) {
-            logf("deleteInternal:foundInNode:%s x:%d", node.toString(), x);
+            logger.info(String.format("deleteInternal:foundInNode:%s x:%d", node.toString(), x));
             if (node.isLeaf()) {
                 removeKeyFromNode(node, x);
-                logf("deleteInternal:removedFromLeaf:%s", node.toString());
+                logger.info(String.format("deleteInternal:removedFromLeaf:%s", node.toString()));
                 return;
             } else {
                 int pos = (node.a != null && node.a == x) ? 0 : (node.b != null && node.b == x) ? 1 : 2;
@@ -442,14 +437,14 @@ public class BTree {
                 if (pos == 0) node.a = pred;
                 else if (pos == 1) node.b = pred;
                 else node.c = pred;
-                logf("deleteInternal:replaceWithPredecessor:%d predNode:%s", x, predNode.toString());
+                logger.info(String.format("deleteInternal:replaceWithPredecessor:%d predNode:%s", x, predNode.toString()));
                 deleteInternal(leftChild, pred);
                 return;
             }
         }
 
         if (node.isLeaf()) {
-            logf("deleteInternal:notFoundInLeaf:%s x:%d", node.toString(), x);
+            logger.info(String.format("deleteInternal:notFoundInLeaf:%s x:%d", node.toString(), x));
             return;
         }
 
@@ -466,18 +461,18 @@ public class BTree {
             Node left = (idx - 1 >= 0) ? getChildAt(node, idx - 1) : null;
             Node right = (idx + 1 <= 3) ? getChildAt(node, idx + 1) : null;
             if (left != null && keyCount(left) >= 2) {
-                logf("deleteInternal:borrowFromLeft:parent:%s childIdx:%d", node.toString(), idx);
+                logger.info(String.format("deleteInternal:borrowFromLeft:parent:%s childIdx:%d", node.toString(), idx));
                 rotateRight(node, idx);
             } else if (right != null && keyCount(right) >= 2) {
-                logf("deleteInternal:borrowFromRight:parent:%s childIdx:%d", node.toString(), idx);
+                logger.info(String.format("deleteInternal:borrowFromRight:parent:%s childIdx:%d", node.toString(), idx));
                 rotateLeft(node, idx);
             } else {
                 if (left != null) {
-                    logf("deleteInternal:mergeWithLeft:parent:%s leftIdx:%d", node.toString(), idx - 1);
+                    logger.info(String.format("deleteInternal:mergeWithLeft:parent:%s leftIdx:%d", node.toString(), idx - 1));
                     mergeWithLeft(node, idx - 1);
                     child = getChildAt(node, idx - 1);
                 } else if (right != null) {
-                    logf("deleteInternal:mergeWithRight:parent:%s childIdx:%d", node.toString(), idx);
+                    logger.info(String.format("deleteInternal:mergeWithRight:parent:%s childIdx:%d", node.toString(), idx));
                     mergeWithRight(node, idx);
                     child = getChildAt(node, idx);
                 }

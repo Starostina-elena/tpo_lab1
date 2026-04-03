@@ -1,22 +1,44 @@
 package org.lia;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BTreeTest {
 
     private BTree tree;
+    private ListAppender<ILoggingEvent> listAppender;
+    private Logger btreeLogger;
 
     @BeforeEach
     public void setUp() {
+        btreeLogger = (Logger) LoggerFactory.getLogger(BTree.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        btreeLogger.addAppender(listAppender);
+
         tree = new BTree();
     }
 
+    @AfterEach
+    public void tearDown() {
+        if (btreeLogger != null && listAppender != null) {
+            btreeLogger.detachAppender(listAppender);
+            listAppender.stop();
+        }
+    }
+
     private boolean logContains(String substr) {
-        for (String s : tree.getLog()) {
-            if (s != null && s.contains(substr)) return true;
+        for (ILoggingEvent ev : listAppender.list) {
+            String msg = ev.getFormattedMessage();
+            if (msg != null && msg.contains(substr)) return true;
         }
         return false;
     }
@@ -78,7 +100,7 @@ public class BTreeTest {
         assertTrue(tree.search(5), "5 should be found in the tree after deletion");
         assertTrue(tree.search(7), "7 should be found in the tree after deletion");
 
-        System.out.println(tree.log);
+        System.out.println(listAppender.list);
 
         assertTrue(logContains("delete:start:3"));
         assertTrue(logContains("search:start:3"));
@@ -189,7 +211,7 @@ public class BTreeTest {
         assertTrue(logContains("insertNonFull:placedInLeaf:(40,41,_)"));
         assertTrue(logContains("insert:done:41"));
 
-        tree.clearLog();
+        listAppender.list.clear();
 
         for (int i = 0; i < 1000; i++) {
             tree.delete(i);
@@ -199,7 +221,7 @@ public class BTreeTest {
             assertFalse(tree.search(i), "Value " + i + " should not be found in the tree after deletion");
         }
 
-        System.out.println(tree.log);
+        System.out.println(listAppender.list);
         tree.printTree();
 
         assertTrue(logContains("delete:start:41"));
